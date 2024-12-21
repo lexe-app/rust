@@ -131,7 +131,7 @@ elf_entry:
     sub %rax,%rdx                     /* all chars written?     */
     jnz .Lelf_entry_call
 
-.Lelf_exit:    
+.Lelf_exit:
     movq $60,%rax                     /* exit() syscall         */
     movq $1,%rdi                      /* exit code 1            */
     syscall
@@ -168,11 +168,16 @@ sgx_entry:
     stmxcsr %gs:tcsls_user_mxcsr
     fnstcw %gs:tcsls_user_fcw
 
+    ;
+    ; phlip9: Our panic messages don't contain secrets and are required to
+    ; effectively operate and diagnose issues in production. Unconditionally
+    ; allow printing panic messages and backtraces.
+    ;
 /*  check for debug buffer pointer */
-    testb  $0xff,DEBUG(%rip)
-    jz .Lskip_debug_init
-    mov %r10,%gs:tcsls_debug_panic_buf_ptr
-.Lskip_debug_init:
+    ; testb  $0xff,DEBUG(%rip)
+    ; jz .Lskip_debug_init
+    mov %r10, %gs:tcsls_debug_panic_buf_ptr
+; .Lskip_debug_init:
 /*  reset cpu state */
     mov %rdx, %r10
     mov $-1, %rax
@@ -275,6 +280,9 @@ usercall:
 .Lusercall_abort:
 /* set aborted bit */
     movb $1,.Laborted(%rip)
+    ;
+    ; phlip9: DON'T expose registers on abort. We'll leave this guarded.
+    ;
 /* save registers in DEBUG mode, so that debugger can reconstruct the stack */
     testb $0xff,DEBUG(%rip)
     jz .Lusercall_noreturn

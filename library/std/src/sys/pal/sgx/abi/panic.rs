@@ -4,7 +4,7 @@ use crate::{cmp, mem};
 
 extern "C" {
     fn take_debug_panic_buf_ptr() -> *mut u8;
-    static DEBUG: u8;
+    // static DEBUG: u8;
 }
 
 pub(crate) struct SgxPanicOutput(Option<&'static mut UserRef<[u8]>>);
@@ -15,7 +15,14 @@ fn empty_user_slice() -> &'static mut UserRef<[u8]> {
 
 impl SgxPanicOutput {
     pub(crate) fn new() -> Option<Self> {
-        if unsafe { DEBUG == 0 } { None } else { Some(SgxPanicOutput(None)) }
+        //
+        // phlip9: Our panic messages don't contain secrets and are required to
+        // effectively operate and diagnose issues in production. Unconditionally
+        // allow printing panic messages and backtraces.
+        //
+        // if unsafe { DEBUG == 0 } { None } else { Some(SgxPanicOutput(None)) }
+        //
+        Some(SgxPanicOutput(None))
     }
 
     fn init(&mut self) -> &mut &'static mut UserRef<[u8]> {

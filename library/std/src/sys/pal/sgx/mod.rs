@@ -155,3 +155,8 @@ pub use crate::sys_common::{AsInner, FromInner, IntoInner};
 pub trait TryIntoInner<Inner>: Sized {
     fn try_into_inner(self) -> Result<Inner, Self>;
 }
+
+// phlip9: Add a marker symbol so I can quickly debug whether my builds are
+// actually using my custom toolchain...
+#[no_mangle]
+pub static LEXE_CUSTOM_TOOLCHAIN: u8 = 1;
